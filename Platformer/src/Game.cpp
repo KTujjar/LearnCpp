@@ -4,7 +4,7 @@
 
 // Game constructor - use default-initialized sprite
 Game::Game()
-    : window(sf::VideoMode({width, height}), "SFML Game")
+    : window(sf::VideoMode({WIDTH, HEIGHT}), "SFML Game")
 {
     window.setFramerateLimit(60);
 }

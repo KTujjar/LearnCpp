@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "Global.h"
 
 class Player {
 public:
@@ -15,6 +16,8 @@ private:
     sf::Texture walkTexture;
 
     unsigned int texWidth = 0;
+    float verticalVelocity = 0;
+    float gravity = 0.1;
     float elapsedTimer = 0.f;
     float frameDelay = 0.15f;
 
