@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include "Global.h"
 #include "Player.h"
+#include "Map.h"
 
 class Game {
 public:
@@ -20,6 +21,7 @@ private:
     sf::Clock animClock;
 
     Player player;
+    Map map;
 
     sf::Clock deltaClock;     // For calculating deltaTime
     float deltaTime = 0.f;    // Stores time passed between frames

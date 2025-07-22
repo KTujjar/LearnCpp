@@ -28,20 +28,15 @@ void Player::handleInput() {
     }
 }
 
-void Player::update(float deltaTime)
+
+void Player::collision()
 {
-    elapsedTimer += deltaTime;
     auto bounds = playerSprite.getGlobalBounds();
 
-    if (elapsedTimer >= frameDelay) {
-        texWidth = (texWidth + 100) % playerSprite.getTexture().getSize().x;
-        playerSprite.setTextureRect({{texWidth, 0}, {100, 100}});
-        elapsedTimer = 0.f;
+    if(map.checkCollision(playerSprite.getPosition().x, playerSprite.getPosition().y, bounds.size.x/10, bounds.size.y/10 - 10))
+    {
+        verticalVelocity = 0.f;
     }
-    playerSprite.move({0.f, verticalVelocity});
-    verticalVelocity += gravity;
-
-    //std::cout << "y postition: "<< playerSprite.getPosition().y << "\n"<< "Global y size: " << bounds.size.y << std::endl;
 
     //Top Window Collision
     if (playerSprite.getPosition().y - (bounds.size.y)/10 < 0) {
@@ -80,7 +75,21 @@ void Player::update(float deltaTime)
             playerSprite.getPosition().y}
         );
     }      
+}
 
+void Player::update(float deltaTime)
+{
+    elapsedTimer += deltaTime;
+
+    if (elapsedTimer >= frameDelay) {
+        texWidth = (texWidth + 100) % playerSprite.getTexture().getSize().x;
+        playerSprite.setTextureRect({{texWidth, 0}, {100, 100}});
+        elapsedTimer = 0.f;
+    }
+    playerSprite.move({0.f, verticalVelocity});
+    verticalVelocity += gravity;
+
+    collision();
 }
 
 void Player::draw(sf::RenderWindow& window) {

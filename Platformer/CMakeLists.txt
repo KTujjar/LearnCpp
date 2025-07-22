@@ -16,6 +16,7 @@ add_executable(main
     src/main.cpp
     src/Game.cpp
     src/Player.cpp
+    src/Map.cpp
 )
 
 file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})

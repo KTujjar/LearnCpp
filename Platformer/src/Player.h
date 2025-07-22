@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Global.h"
+#include "Map.h"
 
 class Player {
 public:
@@ -9,8 +10,11 @@ public:
     void update(float deltaTime);
     void handleInput();
     void draw(sf::RenderWindow& window);
+    void collision();
 
 private:
+    Map map;
+
     sf::Sprite playerSprite;
     sf::Texture idleTexture;
     sf::Texture walkTexture;

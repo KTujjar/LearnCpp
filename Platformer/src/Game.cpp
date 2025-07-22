@@ -33,5 +33,6 @@ void Game::update() {
 void Game::render() {
     window.clear();
     player.draw(window);
+    map.draw(window);
     window.display();
 }
