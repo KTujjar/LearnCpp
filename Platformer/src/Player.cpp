@@ -2,79 +2,90 @@
 #include <iostream>
 
 Player::Player() 
-    : playerSprite(idleTexture)
+    : playerSprite(idleTexture), speed(4.f)
 {
     idleTexture.loadFromFile("../assets/Soldier/Soldier-Idle.png");
     walkTexture.loadFromFile("../assets/Soldier/Soldier-Walk.png");
     playerSprite.setTextureRect({{0,0}, {100, 100}});
     playerSprite.setOrigin({playerSprite.getTextureRect().size.x / 2.0f, playerSprite.getTextureRect().size.y / 2.0f });
-    playerSprite.setScale({5.f, 5.f});
-    playerSprite.setPosition({400,300});
+    playerSprite.setScale({2.f, 2.f});
+    playerSprite.setPosition({300,250});
+    setHitbox({{41.f, 41.f}, { 18.f, 18.f}}); 
 }
 
 void Player::handleInput() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::D)) {
         playerSprite.setTexture(walkTexture);
-        playerSprite.setScale({5.f, 5.f});
-        playerSprite.move({4.f, 0.f});
+        playerSprite.setScale({2.f, 2.f});
+        isMovingLeft = false;
+        isMovingRight = true;
+        playerSprite.move({speed, 0.f});
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Space) && isGrounded) {
+        //playerSprite.setTexture(walkTexture);
+        playerSprite.move({0.f,-10.f});
+        isGrounded = false;
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::A)) {
         playerSprite.setTexture(walkTexture);
-        playerSprite.setScale({-5.f, 5.f});
-        playerSprite.move({-4.f, 0.f});
+        playerSprite.setScale({-2.f, 2.f});
+        isMovingLeft = true;
+        isMovingRight = false;
+        playerSprite.move({-speed, 0.f});
     }
     else {
         playerSprite.setTexture(idleTexture);
+        isMovingLeft = false;
+        isMovingRight = false;
     }
 }
 
+void Player::setHitbox(const sf::FloatRect& hb){
+    localHitbox = hb; 
+}
 
-void Player::collision()
+sf::FloatRect Player::getGlobalHitbox() const{
+    return playerSprite.getTransform().transformRect(localHitbox);
+}
+
+
+void Player::handleCollision(float deltaX, float deltaY)
 {
-    auto bounds = playerSprite.getGlobalBounds();
-
-    if(map.checkCollision(playerSprite.getPosition().x, playerSprite.getPosition().y, bounds.size.x/10, bounds.size.y/10 - 10))
-    {
-        verticalVelocity = 0.f;
+    auto collisionRects = map.getCollisionRect();
+    auto playerBox = getGlobalHitbox();
+    for (const auto& rect : collisionRects) {
+        if (auto opt = playerBox.findIntersection(rect)) {
+            auto overlap = *opt;
+            if (overlap.size.x < overlap.size.y) {
+                if (deltaX > 0) {
+                    playerSprite.move({-overlap.size.x, 0});
+                } else {
+                    playerSprite.move({overlap.size.x, 0});
+                }
+                break;
+            }
+        }
     }
 
-    //Top Window Collision
-    if (playerSprite.getPosition().y - (bounds.size.y)/10 < 0) {
-        // Collided with or passed through the bottom
-        playerSprite.setPosition(
-            {playerSprite.getPosition().x,
-            0 + bounds.size.y/10}
-        );
-        verticalVelocity = 0.f;  // stop downward movement
+    // Vertical phase:
+
+    playerBox = getGlobalHitbox();
+    for (const auto& rect : collisionRects) {
+        if (auto opt = playerBox.findIntersection(rect)) {
+            auto overlap = *opt;
+            if (overlap.size.y <= overlap.size.x) {
+                if (deltaY > 0) {
+                    isGrounded = true;
+                    playerSprite.move({0, -overlap.size.y});
+                    verticalVelocity = 0;
+                } else {
+                    playerSprite.move({0, overlap.size.y});
+                    verticalVelocity = 0;
+                }
+                break;
+            }
+        }
     }
-
-    //Bottom Window Collision
-    if (playerSprite.getPosition().y + (bounds.size.y)/10 > HEIGHT) {
-        // Collided with or passed through the bottom
-        playerSprite.setPosition(
-            {playerSprite.getPosition().x,
-            HEIGHT - bounds.size.y/10}
-        );
-        verticalVelocity = 0.f;  // stop downward movement
-    }
-
-    //Right Window Collision
-    if(playerSprite.getPosition().x + (bounds.size.x)/10 > WIDTH) {
-        playerSprite.setPosition(
-            {WIDTH - bounds.size.x/10,
-            playerSprite.getPosition().y}
-        );
-    }
-
-    //std::cout << "x postition: "<< playerSprite.getPosition().x << "\n"<< "Global x size: " << bounds.size.x << std::endl;
-
-    //Left Window Collision
-    if(playerSprite.getPosition().x - (bounds.size.x)/10 < 0) {
-        playerSprite.setPosition(
-            {0 + bounds.size.x/10,
-            playerSprite.getPosition().y}
-        );
-    }      
 }
 
 void Player::update(float deltaTime)
@@ -88,8 +99,12 @@ void Player::update(float deltaTime)
     }
     playerSprite.move({0.f, verticalVelocity});
     verticalVelocity += gravity;
+    
+    float moveX = (isMovingRight ? speed : isMovingLeft ? -speed : 0.f);
 
-    collision();
+    handleCollision(moveX ,verticalVelocity);
+    //std::cout << "PlayerX U: " << playerSprite.getPosition().x << "PlayerY U: " << playerSprite.getPosition().y << std::endl;
+
 }
 
 void Player::draw(sf::RenderWindow& window) {

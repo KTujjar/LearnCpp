@@ -1,4 +1,6 @@
 #pragma once
 
-#define WIDTH 800
-#define HEIGHT 600
+namespace Global {
+    inline int windowWidth  = 640;
+    inline int windowHeight = 360;
+}

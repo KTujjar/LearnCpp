@@ -10,7 +10,9 @@ public:
     void update(float deltaTime);
     void handleInput();
     void draw(sf::RenderWindow& window);
-    void collision();
+    void handleCollision(float deltaX, float deltaY);
+    void setHitbox(const sf::FloatRect& hb);
+    sf::FloatRect getGlobalHitbox() const;
 
 private:
     Map map;
@@ -24,8 +26,14 @@ private:
     float gravity = 0.1;
     float elapsedTimer = 0.f;
     float frameDelay = 0.15f;
+    bool isMovingLeft = false;
+    bool isMovingRight = false;
+    bool isGrounded = true;
+    float speed;
 
     void animate();
     void moveLeft();
     void moveRight();
+
+    sf::FloatRect localHitbox;
 };

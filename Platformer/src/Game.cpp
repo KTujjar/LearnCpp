@@ -4,10 +4,17 @@
 
 // Game constructor - use default-initialized sprite
 Game::Game()
-    : window(sf::VideoMode({WIDTH, HEIGHT}), "SFML Game")
+    : window(sf::VideoMode({Global::windowWidth, Global::windowHeight}), "Platformer", sf::State::Fullscreen)
 {
+    auto size = window.getSize();
+    Global::windowWidth = size.x;
+    Global::windowHeight = size.y;
     window.setFramerateLimit(60);
-}
+    sf::View view = window.getDefaultView();
+    view.zoom(0.33f);
+    view.setCenter(view.getSize() * 0.5f);
+    window.setView(view)
+;}
 
 void Game::run() {
     while (window.isOpen()) {
