@@ -26,14 +26,14 @@ void Player::update(double delta)
     //Player Controller
     if (currentKeyStates[SDL_SCANCODE_D]) {
         horizontalVelocity = 0.03f;
-        player = player_walk;
+        player = player_walk.texture;
         frames = &walkFrames;
         player_rect.x += horizontalVelocity; // Move right
         flip = SDL_FLIP_NONE;
     }
     else if (currentKeyStates[SDL_SCANCODE_A]) {
         horizontalVelocity = 0.03f;
-        player = player_walk;
+        player = player_walk.texture;
         frames = &walkFrames;
         player_rect.x -= horizontalVelocity; // Move left
         flip = SDL_FLIP_HORIZONTAL;
@@ -41,7 +41,7 @@ void Player::update(double delta)
     else
     {
         horizontalVelocity = 0.00;
-        player = player_idle;
+        player = player_idle.texture;
         frames = &idleFrames;
     }
 
@@ -100,33 +100,33 @@ void Player::loadPlayer(SDL_Renderer *r)
 {
 
     //////////////////////////// LOAD IDLE //////////////////////////////////
-    player_idle = IMG_LoadTexture(r, "../assets/Soldier/Soldier-Idle.png");
+    if(!player_idle.loadTexture(r, "../assets/Soldier/Soldier-Idle.png"))
+    {
+        SDL_Log("Failed to load player idle texture: %s", SDL_GetError());
+    }
 
     //Removes blur
-    SDL_SetTextureScaleMode(player_idle, SDL_SCALEMODE_NEAREST);
-    if (!player_idle) {
-        SDL_Log("Failed to load player texture: %s", SDL_GetError());
-    }
+    SDL_SetTextureScaleMode(player_idle.texture, SDL_SCALEMODE_NEAREST);
 
     //////////////////////////// LOAD WALK //////////////////////////////////
-    player_walk = IMG_LoadTexture(r, "../assets/Soldier/Soldier-Walk.png");
-    //Removes blur
-    SDL_SetTextureScaleMode(player_walk, SDL_SCALEMODE_NEAREST);
-    if (!player_walk) {
-        SDL_Log("Failed to load player texture: %s", SDL_GetError());
+    if(!player_walk.loadTexture(r, "../assets/Soldier/Soldier-Walk.png"))
+    {
+        SDL_Log("Failed to load player walk texture: %s", SDL_GetError());
     }
+    //Removes blur
+    SDL_SetTextureScaleMode(player_walk.texture, SDL_SCALEMODE_NEAREST);
 
     //sets base animation to idle
-    player = player_idle;
+    player = player_idle.texture;
     //Rect that crops the texture 
     SDL_FRect idleInfo = {0, 0, 100, 100};
     SDL_FRect walkInfo = {0, 0, 100, 100};
 
-    if(!loadAnimation(idleFrames, player_idle, 100, idleInfo))
+    if(!loadAnimation(idleFrames, player_idle.texture, 100, idleInfo))
     {
         SDL_Log("idleFrames not loaded properly: %s", SDL_GetError());
     }
-    if(!loadAnimation(walkFrames, player_walk, 100, walkInfo))
+    if(!loadAnimation(walkFrames, player_walk.texture, 100, walkInfo))
     {
         SDL_Log("idleFrames not loaded properly: %s", SDL_GetError());
     }

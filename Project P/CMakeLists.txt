@@ -15,11 +15,26 @@ set(SOURCES
   src/main.cpp
   src/Game.cpp
   src/Player.cpp
+  src/Map.cpp
+  src/Texture.cpp
+)
+
+file(GLOB TMXLITE_SOURCES
+  external/tmxlite/src/*.cpp
+  external/tmxlite/src/*.c
 )
 
 file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 # Create your game executable target as usual
+
 add_executable(ProjectP WIN32 ${SOURCES})
+
+target_include_directories(ProjectP PRIVATE
+    external/tmxlite/include
+)
+
+
+target_sources(ProjectP PRIVATE ${TMXLITE_SOURCES})
 
 # Link to the actual SDL3 library.
 target_link_libraries(ProjectP PRIVATE SDL3_image::SDL3_image SDL3::SDL3)

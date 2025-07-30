@@ -2,12 +2,14 @@
 #include <SDL3_image/SDL_image.h>
 #include <vector>
 #include "Global.h"
+#include "Texture.h"
 
 class Player
 {
 private:
-    SDL_Texture *player_idle;
-    SDL_Texture *player_walk;
+    Texture player_idle;
+    //SDL_Texture *player_idle;
+    Texture player_walk;
     SDL_Texture *player;
     SDL_FRect player_rect;
     SDL_FRect texture_rect;
