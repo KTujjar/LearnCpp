@@ -6,7 +6,7 @@
                 "type": "cmake",
                 "command": "build",
                 "options": {
-                    "cwd": "${workspaceFolder}"
+                    
                 },
                 "group":{
                     "kind": "build",

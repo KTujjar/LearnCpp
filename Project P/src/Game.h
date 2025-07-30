@@ -5,12 +5,13 @@
 class Game
 {
 private:
-    void update();
+    void update(double delta);
     void render();
     void end();
     void renderWindow();
     void processEvents();
     void loadTextures();
+    void handleEvent(const SDL_Event &e);
 
     //Initialize window variables
     SDL_Window *window = NULL;
@@ -19,6 +20,11 @@ private:
     SDL_Event e;   
     const SDL_PixelFormatDetails* details = NULL;
     Player player;
+
+    Uint32 flags;
+
+    SDL_DisplayMode *windowed;
+    SDL_DisplayMode *fullscreen;
 public:
     Game();
     void run();

@@ -12,26 +12,30 @@ void Game::loadTextures()
 
 void Game::run()
 {
+    Uint64 last = SDL_GetPerformanceCounter();
     loadTextures();
     while(window != NULL)
     {
+        Uint64 now = SDL_GetPerformanceCounter();
+        double dt = double(now - last) / SDL_GetPerformanceFrequency();
+        last = now;
         processEvents();
-        update();
+        update(dt);
         render();
     }
     end();
 }
 
-void Game::update()
+void Game::update(double delta)
 {
-    player.update();
+    player.update(delta);
 }
 
 void Game::render()
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Clear to black
     SDL_RenderClear(renderer);
-
+    SDL_SetRenderLogicalPresentation(renderer, Global::windowWidth, Global::windowHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE); //scales renderer with window
 
 
 
@@ -60,8 +64,23 @@ void Game::processEvents()
             window = NULL;
             break;
         }
+        handleEvent(e);
         player.handleEvent(e);
     }
+}
+
+void Game::handleEvent(const SDL_Event &e)
+{
+    if (e.type == SDL_EVENT_KEY_DOWN) {
+        if (e.key.scancode == SDL_SCANCODE_F11) 
+        {
+            flags = SDL_GetWindowFlags(window);
+            if(flags & SDL_WINDOW_FULLSCREEN)
+                SDL_SetWindowFullscreen(window, 0);
+            else
+                SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+        }
+    }   
 }
 
 void Game::renderWindow()
