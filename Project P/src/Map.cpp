@@ -5,6 +5,8 @@ Map::Map()
 
 }
 
+
+//loads the tileMap and tileSets
 void Map::load(SDL_Renderer *r, const char *filename)
 {
     std::vector<std::unique_ptr<Texture>> textures;
@@ -36,6 +38,8 @@ void Map::load(SDL_Renderer *r, const char *filename)
     }
 }
 
+
+//goes through every tile
 bool Map::create(const tmx::Map &map, std::uint32_t layerIndex, const std::vector<std::unique_ptr<Texture>>& textures)
 {
     const auto& layers = map.getLayers();
@@ -77,6 +81,17 @@ bool Map::create(const tmx::Map &map, std::uint32_t layerIndex, const std::vecto
                 if (idx < tileIDs.size() && tileIDs[idx].ID >= ts.getFirstGID()
                     && tileIDs[idx].ID < (ts.getFirstGID() + ts.getTileCount()))
                 {
+                    //Collision Rects
+                    SDL_FRect tileRect = {
+                        static_cast<float>(x * mapTileSize.x),
+                        static_cast<float>(y * mapTileSize.y),
+                        static_cast<float>(mapTileSize.x),
+                        static_cast<float>(mapTileSize.y)
+                    };
+                    
+                    solidRects.push_back(tileRect);
+                    
+                    
                     //tex coords
                     auto idIndex = (tileIDs[idx].ID - ts.getFirstGID());
                     float u = static_cast<float>(idIndex % tileCountX);
@@ -94,17 +109,29 @@ bool Map::create(const tmx::Map &map, std::uint32_t layerIndex, const std::vecto
 
 
                     //push back to vert array
+
+
+                    //A
                     SDL_Vertex vert = { { tilePosX, tilePosY }, vertColour, {u, v} };
                     verts.emplace_back(vert);
+                    
+                    //B
                     vert = { { tilePosX + mapTileSize.x, tilePosY }, vertColour, {u + uNorm, v} };
                     verts.emplace_back(vert);
+
+                    //C
                     vert = { { tilePosX, tilePosY + mapTileSize.y}, vertColour, {u, v + vNorm} };
                     verts.emplace_back(vert);
                     
-                    vert = { { tilePosX, tilePosY +mapTileSize.y}, vertColour, {u, v + vNorm} };
+                    //C
+                    vert = { { tilePosX, tilePosY + mapTileSize.y}, vertColour, {u, v + vNorm} };
                     verts.emplace_back(vert);
+
+                    //B
                     vert = { { tilePosX + mapTileSize.x, tilePosY }, vertColour, {u + uNorm, v} };
                     verts.emplace_back(vert);
+
+                    //D
                     vert = { { tilePosX + mapTileSize.x, tilePosY + mapTileSize.y }, vertColour, {u + uNorm, v + vNorm} };
                     verts.emplace_back(vert);
                 }
@@ -122,11 +149,12 @@ bool Map::create(const tmx::Map &map, std::uint32_t layerIndex, const std::vecto
     return true;
 }
 
+//Draws triangles to create the tiles from the given vertices.
 void Map::draw(SDL_Renderer *r) const
 {
     for (const auto& s : m_subsets)
     {
-        //SDL_Log("Im Here");
+        //Creates 2 triangles per tile to make the full square
         SDL_RenderGeometry(r, s.texture, s.vertexData.data(), static_cast<std::int32_t>(s.vertexData.size()), nullptr, 0);
     }
 }

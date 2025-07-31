@@ -17,7 +17,7 @@ void Player::handleEvent(const SDL_Event &e)
     } 
 }
 
-void Player::update(double delta)
+void Player::update(double delta, std::vector<SDL_FRect> solidRects)
 {
     int numkeys = 0;
     SDL_PumpEvents();
@@ -54,45 +54,124 @@ void Player::update(double delta)
     //VerticalVelocity
     player_rect.y += verticalVelocity * delta;
 
-    //Player Window Collision
+    //Player Collision
     windowCollision();
+    handleCollision(solidRects);
 }
 
 void Player::windowCollision()
 {
-    float left, right, top, bottom;
-    float rightCollision = player_rect.w - (44.0f * (player_rect.w/100));
-    float leftCollision = player_rect.w - (56.0f * (player_rect.w/100));
-    float topCollision = player_rect.h - (57.0f * (player_rect.h/100));
-    float botCollision = player_rect.h - (43.0f * (player_rect.h/100));
+    SDL_FRect playerCollisionRect = getCollisionRect();
 
-    left = player_rect.x + leftCollision;
-    right = player_rect.x + rightCollision;
-    top = player_rect.y;
-    bottom = player_rect.y + botCollision;
-
-    if(left < 0)
-    {
+    //top
+    if (playerCollisionRect.x < 0) {
         horizontalVelocity = 0;
-        player_rect.x = 0 - leftCollision;
+        player_rect.x = 0 - (playerCollisionRect.x - player_rect.x);
     }
-
-    else if(right > Global::windowWidth)
-    {
+    //right
+    else if (playerCollisionRect.x + playerCollisionRect.w > Global::windowWidth) {
         horizontalVelocity = 0;
-        player_rect.x = Global::windowWidth - rightCollision;
+        float overlap = (playerCollisionRect.x + playerCollisionRect.w) - Global::windowWidth;
+        player_rect.x -= overlap;
     }
-
-    else if(bottom > Global::windowHeight)
-    {
+    //bottom
+    else if (playerCollisionRect.y + playerCollisionRect.h > Global::windowHeight) {
         isGrounded = true;
         isJumping = false;
         verticalVelocity = 0;
+        float overlap = (playerCollisionRect.y + playerCollisionRect.h) - Global::windowHeight;
+        player_rect.y -= overlap;
     }
+    //top
+    else if (playerCollisionRect.y < 0) {
+        verticalVelocity = 0;
+        player_rect.y += -playerCollisionRect.y;
+    }
+}
 
-    else if(top < 0)
+SDL_FRect Player::getCollisionRect() const {
+    float rightCollision = player_rect.w - (44.0f * (player_rect.w / 100));
+    float leftCollision = player_rect.w - (56.0f * (player_rect.w / 100));
+    float topCollision = player_rect.h - (57.0f * (player_rect.h / 100));
+    float botCollision = player_rect.h - (43.0f * (player_rect.h / 100));
+
+    float left = player_rect.x + leftCollision;
+    float right = player_rect.x + rightCollision;
+    float top = player_rect.y + topCollision;
+    float bottom = player_rect.y + botCollision;
+
+    return SDL_FRect {
+        left,
+        top,
+        right - left,
+        bottom - top
+    };
+}
+
+bool Player::checkCollision(SDL_FRect tile, SDL_FRect playerCollisionRect)
+{
+    if (SDL_HasRectIntersectionFloat(&playerCollisionRect, &tile))
     {
-        player_rect.y = Global::windowHeight;
+        return true;
+    }
+    return false;
+}
+
+void Player::handleCollision(std::vector<SDL_FRect> solidRects)
+{
+    for(const auto& tile : solidRects)
+    {
+        SDL_FRect playerCollisionRect = getCollisionRect();
+        if(checkCollision(tile, playerCollisionRect))
+        {
+
+            float playerLeft = playerCollisionRect.x;
+            float playerRight = playerCollisionRect.x + playerCollisionRect.w;
+            float playerTop = playerCollisionRect.y;
+            float playerBottom = playerCollisionRect.y + playerCollisionRect.h;
+
+            float tileLeft = tile.x;
+            float tileRight = tile.x + tile.w;
+            float tileTop = tile.y;
+            float tileBottom = tile.y + tile.h;
+
+            // Calculate overlap on each axis
+            float overlapX = std::min(playerRight, tileRight) - std::max(playerLeft, tileLeft);
+            float overlapY = std::min(playerBottom, tileBottom) - std::max(playerTop, tileTop);
+
+            // Decide which axis to resolve on (smallest overlap)
+            if (overlapX < overlapY) 
+            {
+                // Horizontal collision
+                if (player_rect.x < tile.x) {
+                    // Colliding from left
+                    player_rect.x -= overlapX;
+                } 
+                else 
+                {
+                    // Colliding from right
+                    player_rect.x += overlapX;
+                }
+                horizontalVelocity = 0;
+            } 
+            else 
+            {
+                // Vertical collision
+                if (player_rect.y < tile.y) 
+                {
+                    // Colliding from top (landing)
+                    player_rect.y -= overlapY;
+                    isGrounded = true;
+                    isJumping = false;
+                } 
+                else 
+                {
+                    // Colliding from bottom (head bump)
+                    player_rect.y += overlapY;
+                    verticalVelocity = 0;
+                }
+            }
+        }
     }
 }
 
@@ -136,8 +215,8 @@ void Player::loadPlayer(SDL_Renderer *r)
     //Rect for the position to draw
     player_rect.x = 100;
     player_rect.y = 100;
-    player_rect.w = 400;
-    player_rect.h = 400;
+    player_rect.w = 200;
+    player_rect.h = 200;
 }
 
 //Takes in a vector of SDL_FRect, the texture, the base width of a single frame, and the frameRect to create a vector of all the frames to create an animation.

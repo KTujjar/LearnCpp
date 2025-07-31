@@ -34,6 +34,9 @@ public:
     bool loadAnimation(std::vector<SDL_FRect> &frames, SDL_Texture *texture, int frame_width, SDL_FRect frameInfo);
     void end();
     void handleEvent(const SDL_Event &e);
-    void update(double delta);
+    void update(double delta, std::vector<SDL_FRect> solidRects);
     void windowCollision();
+    bool checkCollision(SDL_FRect tile, SDL_FRect playerCollisionRect);
+    void handleCollision(std::vector<SDL_FRect> solidRects);
+    SDL_FRect getCollisionRect() const;
 };

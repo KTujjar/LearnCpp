@@ -29,7 +29,7 @@ void Game::run()
 
 void Game::update(double delta)
 {
-    player.update(delta);
+    player.update(delta, map.solidRects);
 }
 
 void Game::render()

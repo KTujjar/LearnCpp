@@ -23,6 +23,7 @@ private:
 public:
     
     Map();
+    std::vector<SDL_FRect> solidRects;
     void draw(SDL_Renderer *r) const;
     void load(SDL_Renderer *r, const char *filename);
     bool create(const tmx::Map &map, std::uint32_t layerIndex, const std::vector<std::unique_ptr<Texture>>& textures);
