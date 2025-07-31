@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include "Global.h"
 #include "Player.h"
+#include "Map.h"
 
 class Game
 {
@@ -20,6 +21,7 @@ private:
     SDL_Event e;   
     const SDL_PixelFormatDetails* details = NULL;
     Player player;
+    Map map;
 
     Uint32 flags;
 

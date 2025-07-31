@@ -8,6 +8,7 @@ Game::Game()
 void Game::loadTextures()
 {
     player.loadPlayer(renderer);
+    map.load(renderer, "../assets/Tiles/level3.tmx");
 }
 
 void Game::run()
@@ -40,7 +41,7 @@ void Game::render()
 
 
     player.drawPlayer(renderer);
-
+    map.draw(renderer);
 
 
 

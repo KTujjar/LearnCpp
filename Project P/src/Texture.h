@@ -1,3 +1,4 @@
+#pragma once
 #include "Global.h"
 #include <SDL3_image/SDL_image.h>
 #include <vector>
@@ -12,4 +13,5 @@ public:
     Texture();
     SDL_Texture *texture;
     bool loadTexture(SDL_Renderer *r, const char *filename);
+    SDL_Point getSize() const;
 };
