@@ -8,18 +8,20 @@ Game::Game()
 void Game::loadTextures()
 {
     player.loadPlayer(renderer);
-    map.load(renderer, "../assets/Tiles/level3.tmx");
+    map.load(renderer, "../assets/Tiles/level3.tmx", viewport.v.mapViewport);
 }
 
 void Game::run()
 {
     Uint64 last = SDL_GetPerformanceCounter();
+
     loadTextures();
     while(window != NULL)
     {
         Uint64 now = SDL_GetPerformanceCounter();
         double dt = double(now - last) / SDL_GetPerformanceFrequency();
         last = now;
+
         processEvents();
         update(dt);
         render();
@@ -30,18 +32,20 @@ void Game::run()
 void Game::update(double delta)
 {
     player.update(delta, map.solidRects);
+    viewport.update(player.getCollisionRect(), map.TILE_SIZE);
 }
 
 void Game::render()
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Clear to black
     SDL_RenderClear(renderer);
+    SDL_SetRenderVSync(renderer, 1);
     SDL_SetRenderLogicalPresentation(renderer, Global::windowWidth, Global::windowHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE); //scales renderer with window
 
 
-
     player.drawPlayer(renderer);
-    map.draw(renderer);
+    //SDL_Log("%f", viewport.v.mapViewport);
+    map.draw(renderer, viewport.v.mapViewport);
 
 
 
@@ -79,7 +83,7 @@ void Game::handleEvent(const SDL_Event &e)
             if(flags & SDL_WINDOW_FULLSCREEN)
                 SDL_SetWindowFullscreen(window, 0);
             else
-                SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+                SDL_SetWindowFullscreen(window, SDL_WINDOW_BORDERLESS);
         }
     }   
 }
@@ -93,7 +97,7 @@ void Game::renderWindow()
     else
     {
         //Create window
-        if(SDL_CreateWindowAndRenderer( "SDL Tutorial", Global::windowWidth, Global::windowHeight, SDL_EVENT_WINDOW_SHOWN, &window, &renderer))
+        if(SDL_CreateWindowAndRenderer( "Projet P", Global::windowWidth, Global::windowHeight, SDL_EVENT_WINDOW_SHOWN, &window, &renderer))
         {
             SDL_Log( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
         }
@@ -110,6 +114,7 @@ void Game::renderWindow()
             
             //Update the surface
             SDL_UpdateWindowSurface( window );
+
 
             //Hack to get window to stay up
         }

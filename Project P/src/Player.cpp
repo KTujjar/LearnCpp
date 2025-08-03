@@ -25,14 +25,14 @@ void Player::update(double delta, std::vector<SDL_FRect> solidRects)
 
     //Player Controller
     if (currentKeyStates[SDL_SCANCODE_D]) {
-        horizontalVelocity = 0.03f;
+        horizontalVelocity = 0.2f;
         player = player_walk.texture;
         frames = &walkFrames;
         player_rect.x += horizontalVelocity; // Move right
         flip = SDL_FLIP_NONE;
     }
     else if (currentKeyStates[SDL_SCANCODE_A]) {
-        horizontalVelocity = 0.03f;
+        horizontalVelocity = 0.2f;
         player = player_walk.texture;
         frames = &walkFrames;
         player_rect.x -= horizontalVelocity; // Move left
@@ -160,9 +160,11 @@ void Player::handleCollision(std::vector<SDL_FRect> solidRects)
                 if (player_rect.y < tile.y) 
                 {
                     // Colliding from top (landing)
+                    //SDL_Log("Im Here %f", verticalVelocity);
                     player_rect.y -= overlapY;
                     isGrounded = true;
                     isJumping = false;
+                    verticalVelocity = 0;
                 } 
                 else 
                 {

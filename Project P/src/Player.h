@@ -9,7 +9,6 @@ class Player
 {
 private:
     Texture player_idle;
-    //SDL_Texture *player_idle;
     Texture player_walk;
     SDL_Texture *player;
     SDL_FRect player_rect;

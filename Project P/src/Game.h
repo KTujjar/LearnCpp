@@ -2,6 +2,7 @@
 #include "Global.h"
 #include "Player.h"
 #include "Map.h"
+#include "Viewport.h"
 
 class Game
 {
@@ -22,6 +23,7 @@ private:
     const SDL_PixelFormatDetails* details = NULL;
     Player player;
     Map map;
+    Viewport viewport;
 
     Uint32 flags;
 

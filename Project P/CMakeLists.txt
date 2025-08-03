@@ -17,6 +17,7 @@ set(SOURCES
   src/Player.cpp
   src/Map.cpp
   src/Texture.cpp
+  src/Viewport.cpp
 )
 
 file(GLOB TMXLITE_SOURCES

@@ -5,9 +5,8 @@ Map::Map()
 
 }
 
-
 //loads the tileMap and tileSets
-void Map::load(SDL_Renderer *r, const char *filename)
+void Map::load(SDL_Renderer *r, const char *filename, SDL_FRect viewport)
 {
     std::vector<std::unique_ptr<Texture>> textures;
     std::vector<std::unique_ptr<Map>> renderLayers;
@@ -31,16 +30,15 @@ void Map::load(SDL_Renderer *r, const char *filename)
         {
             if (mapLayers[i]->getType() == tmx::Layer::Type::Tile)
             {
-                create(map, i, textures); //just cos we're using C++14
+                create(map, i, textures, viewport); //just cos we're using C++14
             }
         }
     
     }
 }
 
-
 //goes through every tile
-bool Map::create(const tmx::Map &map, std::uint32_t layerIndex, const std::vector<std::unique_ptr<Texture>>& textures)
+bool Map::create(const tmx::Map &map, std::uint32_t layerIndex, const std::vector<std::unique_ptr<Texture>>& textures, SDL_FRect viewport)
 {
     const auto& layers = map.getLayers();
     assert(layers[layerIndex]->getType() == tmx::Layer::Type::Tile);
@@ -104,7 +102,8 @@ bool Map::create(const tmx::Map &map, std::uint32_t layerIndex, const std::vecto
                     v /= textures[i]->getSize().y;
 
                     //vert pos
-                    const float tilePosX = static_cast<float>(x) * mapTileSize.x;
+                    const float tilePosX = static_cast<float>(x) * mapTileSize.x + viewport.x;
+                    //SDL_Log("%f", viewport.x);
                     const float tilePosY = (static_cast<float>(y) * mapTileSize.y);
 
 
@@ -150,11 +149,20 @@ bool Map::create(const tmx::Map &map, std::uint32_t layerIndex, const std::vecto
 }
 
 //Draws triangles to create the tiles from the given vertices.
-void Map::draw(SDL_Renderer *r) const
+void Map::draw(SDL_Renderer *r, SDL_FRect viewport) const
 {
     for (const auto& s : m_subsets)
     {
+
+        std::vector<SDL_Vertex> adjustedVerts = s.vertexData; // copy original
+
+        // Apply the inverse of camera transform
+        for (auto& v : adjustedVerts)
+        {
+            v.position.x -= viewport.x;
+            v.position.y -= viewport.y;
+        }
         //Creates 2 triangles per tile to make the full square
-        SDL_RenderGeometry(r, s.texture, s.vertexData.data(), static_cast<std::int32_t>(s.vertexData.size()), nullptr, 0);
+        SDL_RenderGeometry(r, s.texture, adjustedVerts.data(), static_cast<std::int32_t>(s.vertexData.size()), nullptr, 0);
     }
 }

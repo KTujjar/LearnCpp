@@ -20,11 +20,12 @@ private:
     };
     std::vector<Subset> m_subsets;
 
+
 public:
-    
+    int TILE_SIZE = 16;
     Map();
     std::vector<SDL_FRect> solidRects;
-    void draw(SDL_Renderer *r) const;
-    void load(SDL_Renderer *r, const char *filename);
-    bool create(const tmx::Map &map, std::uint32_t layerIndex, const std::vector<std::unique_ptr<Texture>>& textures);
+    void draw(SDL_Renderer *r, SDL_FRect viewport) const;
+    void load(SDL_Renderer *r, const char *filename, SDL_FRect viewport);
+    bool create(const tmx::Map &map, std::uint32_t layerIndex, const std::vector<std::unique_ptr<Texture>>& textures, SDL_FRect viewport);
 };

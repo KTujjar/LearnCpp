@@ -1,0 +1,5 @@
+1) Camera following character
+2) Attack Animation 
+3) Adding an enemy entity
+4) Making the entity take damage from attacks
+5) Creating entity AI and setup player Hitpoints
