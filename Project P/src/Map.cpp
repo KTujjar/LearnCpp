@@ -37,7 +37,7 @@ void Map::load(SDL_Renderer *r, const char *filename, SDL_FRect viewport)
     }
 }
 
-//goes through every tile
+//Loads every tile before drawing
 bool Map::create(const tmx::Map &map, std::uint32_t layerIndex, const std::vector<std::unique_ptr<Texture>>& textures, SDL_FRect viewport)
 {
     const auto& layers = map.getLayers();

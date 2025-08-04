@@ -26,23 +26,23 @@ void Player::update(double delta, std::vector<SDL_FRect> solidRects)
     //Player Controller
     if (currentKeyStates[SDL_SCANCODE_D]) {
         horizontalVelocity = 0.2f;
-        player = player_walk.texture;
-        frames = &walkFrames;
+        player = walkAnimation.texture;
+        frames = &walkAnimation.frames;
         player_rect.x += horizontalVelocity; // Move right
         flip = SDL_FLIP_NONE;
     }
     else if (currentKeyStates[SDL_SCANCODE_A]) {
         horizontalVelocity = 0.2f;
-        player = player_walk.texture;
-        frames = &walkFrames;
+        player = walkAnimation.texture;
+        frames = &walkAnimation.frames;
         player_rect.x -= horizontalVelocity; // Move left
         flip = SDL_FLIP_HORIZONTAL;
     }
     else
     {
         horizontalVelocity = 0.00;
-        player = player_idle.texture;
-        frames = &idleFrames;
+        player = idleAnimation.texture;
+        frames = &idleAnimation.frames;
     }
 
     //Jump
@@ -180,74 +180,41 @@ void Player::handleCollision(std::vector<SDL_FRect> solidRects)
 void Player::loadPlayer(SDL_Renderer *r)
 {
 
-    //////////////////////////// LOAD IDLE //////////////////////////////////
-    if(!player_idle.loadTexture(r, "../assets/Soldier/Soldier-Idle.png"))
+    ///////////////////////////////// LOAD TEXTURES //////////////////////////////////////
+    if(!idleAnimation.texture.loadTexture(r, "../assets/Soldier/Soldier-Idle.png"))
     {
         SDL_Log("Failed to load player idle texture: %s", SDL_GetError());
     }
 
-    //Removes blur
-    SDL_SetTextureScaleMode(player_idle.texture, SDL_SCALEMODE_NEAREST);
+    SDL_SetTextureScaleMode(idleAnimation.texture, SDL_SCALEMODE_NEAREST);
 
-    //////////////////////////// LOAD WALK //////////////////////////////////
-    if(!player_walk.loadTexture(r, "../assets/Soldier/Soldier-Walk.png"))
+    if(!walkAnimation.texture.loadTexture(r, "../assets/Soldier/Soldier-Walk.png"))
     {
-        SDL_Log("Failed to load player walk texture: %s", SDL_GetError());
+        SDL_Log("Failed to load player idle texture: %s", SDL_GetError());
     }
-    //Removes blur
-    SDL_SetTextureScaleMode(player_walk.texture, SDL_SCALEMODE_NEAREST);
 
-    //sets base animation to idle
-    player = player_idle.texture;
-    //Rect that crops the texture 
-    SDL_FRect idleInfo = {0, 0, 100, 100};
-    SDL_FRect walkInfo = {0, 0, 100, 100};
+    SDL_SetTextureScaleMode(walkAnimation.texture, SDL_SCALEMODE_NEAREST);
 
-    if(!loadAnimation(idleFrames, player_idle.texture, 100, idleInfo))
-    {
-        SDL_Log("idleFrames not loaded properly: %s", SDL_GetError());
-    }
-    if(!loadAnimation(walkFrames, player_walk.texture, 100, walkInfo))
+    player = idleAnimation.texture;
+
+    //////////////////////////////// LOAD ANIMATION FRAMES /////////////////////////////////
+    if(idleAnimation.load(100.f, 100.f))
     {
         SDL_Log("idleFrames not loaded properly: %s", SDL_GetError());
     }
 
-    frames = &idleFrames;
+    if(walkAnimation.load(100.f, 100.f))
+    {
+        SDL_Log("walkFrames not loaded properly: %s", SDL_GetError());
+    }
+
+    frames = &idleAnimation.frames;
 
     //Rect for the position to draw
     player_rect.x = 100;
     player_rect.y = 100;
     player_rect.w = 200;
     player_rect.h = 200;
-}
-
-//Takes in a vector of SDL_FRect, the texture, the base width of a single frame, and the frameRect to create a vector of all the frames to create an animation.
-bool Player::loadAnimation(std::vector<SDL_FRect> &frames, SDL_Texture *texture, int frame_width, SDL_FRect frameInfo)
-{   
-    frames.clear();
-    SDL_FRect t;
-    float texWidth = 0, texHeight = 0;
-    if (!SDL_GetTextureSize(texture, &texWidth, &texHeight)) 
-    {
-        SDL_Log("Failed to get texture size: %s", SDL_GetError());
-        return false;
-    }
-    
-    int frameCount = static_cast<int>(texWidth / frame_width);
-
-    if(frameCount <= 0)
-    {
-        SDL_Log("Invalid frameCount = %d", frameCount);
-        return false;
-    }
-    for(int i = 0; i < frameCount; i++)
-    {
-        t = {frameInfo.x + (frame_width * i), (float)frameInfo.y, (float)frameInfo.w, (float)frameInfo.h};
-        //SDL_Log("%f", t.x);
-        frames.push_back(t);
-    }
-
-    return true;
 }
 
 void Player::drawPlayer(SDL_Renderer *r)
@@ -279,7 +246,7 @@ void Player::drawPlayer(SDL_Renderer *r)
     }
 }
 
-void Player::end()
+Player::~Player()
 {
     SDL_DestroyTexture(player);
 }

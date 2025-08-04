@@ -9,8 +9,6 @@ class Game
 private:
     void update(double delta);
     void render();
-    void end();
-    void renderWindow();
     void processEvents();
     void loadTextures();
     void handleEvent(const SDL_Event &e);
@@ -21,6 +19,7 @@ private:
     SDL_Surface* screenSurface = NULL;
     SDL_Event e;   
     const SDL_PixelFormatDetails* details = NULL;
+
     Player player;
     Map map;
     Viewport viewport;
@@ -31,5 +30,6 @@ private:
     SDL_DisplayMode *fullscreen;
 public:
     Game();
+    ~Game();
     void run();
 };
