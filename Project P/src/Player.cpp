@@ -1,5 +1,4 @@
 #include "Player.h"
-#include <cassert>
 
 
 Player::Player()
@@ -24,28 +23,26 @@ void Player::update(double delta, std::vector<SDL_FRect> solidRects)
     const bool* currentKeyStates = SDL_GetKeyboardState(&numkeys);
 
     //Player Controller
-    horizontalVelocity = 0.0f;
+    
     if (currentKeyStates[SDL_SCANCODE_D]) {
         horizontalVelocity = 100.0f;
         player = walkAnimation.texture;
         frames = &walkAnimation.frames;
-        //player_rect.x += horizontalVelocity; // Move right
         flip = SDL_FLIP_NONE;
     }
     else if (currentKeyStates[SDL_SCANCODE_A]) {
         horizontalVelocity = -100.0f;
         player = walkAnimation.texture;
         frames = &walkAnimation.frames;
-        //player_rect.x -= horizontalVelocity; // Move left
         flip = SDL_FLIP_HORIZONTAL;
     }
     else
     {
+        horizontalVelocity = 0.0f;
         player = idleAnimation.texture;
         frames = &idleAnimation.frames;
     }
 
-    SDL_Log("IsGrounded: %d", isGrounded);
     //Jump
     if(!isGrounded)
     {
@@ -55,41 +52,41 @@ void Player::update(double delta, std::vector<SDL_FRect> solidRects)
     //VerticalVelocity and Horizontal velocity
     player_rect.y += verticalVelocity * delta;
     player_rect.x += horizontalVelocity * delta;
-
+    
     //Player Collision
-    windowCollision();
-    handleCollision(solidRects);
+    bool groundedThisFrame = false;
+    if(windowCollision())
+    {
+        player_rect.x = 100;
+        player_rect.y = 100;
+        horizontalVelocity = 0.0f;
+    }
+    handleCollision(solidRects, groundedThisFrame);
+    isGrounded = groundedThisFrame;
+    SDL_Log("IsGrounded After: %d", isGrounded);
 }
 
-void Player::windowCollision()
+bool Player::windowCollision()
 {
     SDL_FRect playerCollisionRect = getCollisionRect();
 
     //left
     if (playerCollisionRect.x < 0) {
-        horizontalVelocity = 0;
-        player_rect.x = 0 - (playerCollisionRect.x - player_rect.x);
+        return true;
     }
     //right
     else if (playerCollisionRect.x + playerCollisionRect.w > Global::windowWidth) {
-        horizontalVelocity = 0;
-        float overlap = (playerCollisionRect.x + playerCollisionRect.w) - Global::windowWidth;
-        player_rect.x -= overlap;
+        return true;
     }
     //bottom
     else if (playerCollisionRect.y + playerCollisionRect.h > Global::windowHeight) {
-        isGrounded = true;
-        isJumping = false;
-        verticalVelocity = 0;
-        float overlap = (playerCollisionRect.y + playerCollisionRect.h) - Global::windowHeight;
-        player_rect.y -= overlap;
+        return true;
     }
     //top
     else if (playerCollisionRect.y < 0) {
-        
-        verticalVelocity = 0;
-        player_rect.y += -playerCollisionRect.y;
+        return true;
     }
+    return false;
 }
 
 SDL_FRect Player::getCollisionRect() const {
@@ -120,14 +117,15 @@ bool Player::checkCollision(SDL_FRect tile, SDL_FRect playerCollisionRect)
     return false;
 }
 
-void Player::handleCollision(std::vector<SDL_FRect> solidRects)
+void Player::handleCollision(std::vector<SDL_FRect> solidRects, bool& groundedThisFrame)
 {
     SDL_FRect playerCollisionRect = getCollisionRect();
 
     float offsetX = playerCollisionRect.x - player_rect.x;
     float offsetY = playerCollisionRect.y - player_rect.y;
     
-    bool groundedThisFrame = false;
+     
+    
 
     for (const auto& tile : solidRects)
     {
@@ -136,20 +134,21 @@ void Player::handleCollision(std::vector<SDL_FRect> solidRects)
             SDL_FRect result;
             SDL_GetRectIntersectionFloat(&playerCollisionRect, &tile, &result);
 
+            float feetY = playerCollisionRect.y + playerCollisionRect.h;
+            float tileTopY = tile.y;
+            
             float dx = 0;
             float dy = 0;
-            
-            //SDL_Log("result.w: %f result.h: %f", result.w, result.h);
-            //SDL_Log("playerCollisionRect.w: %f, playerCollisionRect.h: %f", tile.w, tile.h);
+           
             if (result.w < result.h) {
                 if (horizontalVelocity > 0) {
                     dx = -result.w;
                 } else if (horizontalVelocity < 0) {
                     dx = result.w;  
                 }
-                horizontalVelocity = 0;
+                horizontalVelocity = 0.0f;
             } else if(result.h < result.w) {
-                if (verticalVelocity > 0) {
+                if (verticalVelocity >= 0) {
                     dy = -result.h;
                     groundedThisFrame = true;
                     isJumping = false;
@@ -158,6 +157,7 @@ void Player::handleCollision(std::vector<SDL_FRect> solidRects)
                     dy = result.h;
                     verticalVelocity = 0;
                     //isGrounded = false;
+                    //groundedThisFrame = false;
                 }
             }
 
@@ -173,7 +173,6 @@ void Player::handleCollision(std::vector<SDL_FRect> solidRects)
             playerCollisionRect = getCollisionRect();
         }
     }
-    isGrounded = groundedThisFrame;
 }
 
 void Player::load(SDL_Renderer *r)
