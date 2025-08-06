@@ -11,7 +11,7 @@ Game::Game()
     else
     {
         //Create window
-        if(SDL_CreateWindowAndRenderer( "Projet P", Global::windowWidth, Global::windowHeight, SDL_EVENT_WINDOW_SHOWN, &window, &renderer))
+        if(SDL_CreateWindowAndRenderer( "Project P", Global::windowWidth, Global::windowHeight, SDL_EVENT_WINDOW_SHOWN, &window, &renderer))
         {
             SDL_Log( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
         }
@@ -38,8 +38,8 @@ Game::Game()
 //Loads Assets once before main game loop
 void Game::loadTextures()
 {
-    player.loadPlayer(renderer);
-    map.load(renderer, "../assets/Tiles/level3.tmx", viewport.v.mapViewport);
+    player.load(renderer);
+    map.load(renderer, "../assets/Tiles/level4.tmx", viewport.v.mapViewport);
 }
 
 //Game Loop
@@ -64,7 +64,7 @@ void Game::run()
 void Game::update(double delta)
 {
     player.update(delta, map.solidRects);
-    viewport.update(player.getCollisionRect(), map.TILE_SIZE);
+    //viewport.update(player.getCollisionRect(), map.TILE_SIZE);
 }
 
 //Handles drawing to screen
@@ -76,7 +76,7 @@ void Game::render()
     SDL_SetRenderLogicalPresentation(renderer, Global::windowWidth, Global::windowHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE); //scales renderer with window
 
 
-    player.drawPlayer(renderer);
+    player.draw(renderer);
     map.draw(renderer, viewport.v.mapViewport);
 
 

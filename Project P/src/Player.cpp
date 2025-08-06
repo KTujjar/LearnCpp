@@ -24,35 +24,37 @@ void Player::update(double delta, std::vector<SDL_FRect> solidRects)
     const bool* currentKeyStates = SDL_GetKeyboardState(&numkeys);
 
     //Player Controller
+    horizontalVelocity = 0.0f;
     if (currentKeyStates[SDL_SCANCODE_D]) {
-        horizontalVelocity = 0.2f;
+        horizontalVelocity = 100.0f;
         player = walkAnimation.texture;
         frames = &walkAnimation.frames;
-        player_rect.x += horizontalVelocity; // Move right
+        //player_rect.x += horizontalVelocity; // Move right
         flip = SDL_FLIP_NONE;
     }
     else if (currentKeyStates[SDL_SCANCODE_A]) {
-        horizontalVelocity = 0.2f;
+        horizontalVelocity = -100.0f;
         player = walkAnimation.texture;
         frames = &walkAnimation.frames;
-        player_rect.x -= horizontalVelocity; // Move left
+        //player_rect.x -= horizontalVelocity; // Move left
         flip = SDL_FLIP_HORIZONTAL;
     }
     else
     {
-        horizontalVelocity = 0.00;
         player = idleAnimation.texture;
         frames = &idleAnimation.frames;
     }
 
+    SDL_Log("IsGrounded: %d", isGrounded);
     //Jump
-    if(isJumping || !isGrounded)
+    if(!isGrounded)
     {
         verticalVelocity += gravity * delta;
     }
 
-    //VerticalVelocity
+    //VerticalVelocity and Horizontal velocity
     player_rect.y += verticalVelocity * delta;
+    player_rect.x += horizontalVelocity * delta;
 
     //Player Collision
     windowCollision();
@@ -63,7 +65,7 @@ void Player::windowCollision()
 {
     SDL_FRect playerCollisionRect = getCollisionRect();
 
-    //top
+    //left
     if (playerCollisionRect.x < 0) {
         horizontalVelocity = 0;
         player_rect.x = 0 - (playerCollisionRect.x - player_rect.x);
@@ -84,27 +86,26 @@ void Player::windowCollision()
     }
     //top
     else if (playerCollisionRect.y < 0) {
+        
         verticalVelocity = 0;
         player_rect.y += -playerCollisionRect.y;
     }
 }
 
 SDL_FRect Player::getCollisionRect() const {
-    float rightCollision = player_rect.w - (44.0f * (player_rect.w / 100));
-    float leftCollision = player_rect.w - (56.0f * (player_rect.w / 100));
-    float topCollision = player_rect.h - (57.0f * (player_rect.h / 100));
-    float botCollision = player_rect.h - (43.0f * (player_rect.h / 100));
+    float scaleX = player_rect.w / 100.0f;
+    float scaleY = player_rect.h / 100.0f;
 
-    float left = player_rect.x + leftCollision;
-    float right = player_rect.x + rightCollision;
-    float top = player_rect.y + topCollision;
-    float bottom = player_rect.y + botCollision;
+    float visibleX = 42.0f * scaleX;
+    float visibleY = 38.0f * scaleY;
+    float visibleW = 15.0f * scaleX;
+    float visibleH = 20.0f * scaleY;
 
     return SDL_FRect {
-        left,
-        top,
-        right - left,
-        bottom - top
+        player_rect.x + visibleX,
+        player_rect.y + visibleY,
+        visibleW,
+        visibleH
     };
 }
 
@@ -112,6 +113,8 @@ bool Player::checkCollision(SDL_FRect tile, SDL_FRect playerCollisionRect)
 {
     if (SDL_HasRectIntersectionFloat(&playerCollisionRect, &tile))
     {
+        // SDL_Log("Player x: %f  Tile x: %f", playerCollisionRect.x, tile.x);
+        // SDL_Log("Collision");
         return true;
     }
     return false;
@@ -119,65 +122,61 @@ bool Player::checkCollision(SDL_FRect tile, SDL_FRect playerCollisionRect)
 
 void Player::handleCollision(std::vector<SDL_FRect> solidRects)
 {
-    for(const auto& tile : solidRects)
+    SDL_FRect playerCollisionRect = getCollisionRect();
+
+    float offsetX = playerCollisionRect.x - player_rect.x;
+    float offsetY = playerCollisionRect.y - player_rect.y;
+    
+    bool groundedThisFrame = false;
+
+    for (const auto& tile : solidRects)
     {
-        SDL_FRect playerCollisionRect = getCollisionRect();
-        if(checkCollision(tile, playerCollisionRect))
+        if (checkCollision(tile, playerCollisionRect))
         {
+            SDL_FRect result;
+            SDL_GetRectIntersectionFloat(&playerCollisionRect, &tile, &result);
 
-            float playerLeft = playerCollisionRect.x;
-            float playerRight = playerCollisionRect.x + playerCollisionRect.w;
-            float playerTop = playerCollisionRect.y;
-            float playerBottom = playerCollisionRect.y + playerCollisionRect.h;
-
-            float tileLeft = tile.x;
-            float tileRight = tile.x + tile.w;
-            float tileTop = tile.y;
-            float tileBottom = tile.y + tile.h;
-
-            // Calculate overlap on each axis
-            float overlapX = std::min(playerRight, tileRight) - std::max(playerLeft, tileLeft);
-            float overlapY = std::min(playerBottom, tileBottom) - std::max(playerTop, tileTop);
-
-            // Decide which axis to resolve on (smallest overlap)
-            if (overlapX < overlapY) 
-            {
-                // Horizontal collision
-                if (player_rect.x < tile.x) {
-                    // Colliding from left
-                    player_rect.x -= overlapX;
-                } 
-                else 
-                {
-                    // Colliding from right
-                    player_rect.x += overlapX;
+            float dx = 0;
+            float dy = 0;
+            
+            //SDL_Log("result.w: %f result.h: %f", result.w, result.h);
+            //SDL_Log("playerCollisionRect.w: %f, playerCollisionRect.h: %f", tile.w, tile.h);
+            if (result.w < result.h) {
+                if (horizontalVelocity > 0) {
+                    dx = -result.w;
+                } else if (horizontalVelocity < 0) {
+                    dx = result.w;  
                 }
                 horizontalVelocity = 0;
-            } 
-            else 
-            {
-                // Vertical collision
-                if (player_rect.y < tile.y) 
-                {
-                    // Colliding from top (landing)
-                    //SDL_Log("Im Here %f", verticalVelocity);
-                    player_rect.y -= overlapY;
-                    isGrounded = true;
+            } else if(result.h < result.w) {
+                if (verticalVelocity > 0) {
+                    dy = -result.h;
+                    groundedThisFrame = true;
                     isJumping = false;
                     verticalVelocity = 0;
-                } 
-                else 
-                {
-                    // Colliding from bottom (head bump)
-                    player_rect.y += overlapY;
+                } else if (verticalVelocity < 0) {
+                    dy = result.h;
                     verticalVelocity = 0;
+                    //isGrounded = false;
                 }
             }
+
+            // Apply movement to the collision box
+            playerCollisionRect.x += dx;
+            playerCollisionRect.y += dy;
+
+            // Recalculate player_rect based on collision rect and original offset
+            player_rect.x = playerCollisionRect.x - offsetX;
+            player_rect.y = playerCollisionRect.y - offsetY;
+
+            // Recalculate playerCollisionRect to reflect new position
+            playerCollisionRect = getCollisionRect();
         }
     }
+    isGrounded = groundedThisFrame;
 }
 
-void Player::loadPlayer(SDL_Renderer *r)
+void Player::load(SDL_Renderer *r)
 {
 
     ///////////////////////////////// LOAD TEXTURES //////////////////////////////////////
@@ -217,7 +216,7 @@ void Player::loadPlayer(SDL_Renderer *r)
     player_rect.h = 200;
 }
 
-void Player::drawPlayer(SDL_Renderer *r)
+void Player::draw(SDL_Renderer *r)
 {
     //Uint32 ticks = SDL_GetTicks();
     const Uint32 frameDuration = 100;
@@ -244,6 +243,11 @@ void Player::drawPlayer(SDL_Renderer *r)
     if (!SDL_RenderTextureRotated(r, player, &src, &player_rect, 0.0, nullptr, flip)) {
         SDL_Log("RenderTextureRotated failed: %s", SDL_GetError());
     }
+
+    //sees player collision box
+    SDL_SetRenderDrawColor(r, 0, 255, 0, 255); // Green
+    SDL_FRect box = getCollisionRect();
+    SDL_RenderRect(r, &box);
 }
 
 Player::~Player()

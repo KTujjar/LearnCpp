@@ -102,7 +102,7 @@ bool Map::create(const tmx::Map &map, std::uint32_t layerIndex, const std::vecto
                     v /= textures[i]->getSize().y;
 
                     //vert pos
-                    const float tilePosX = static_cast<float>(x) * mapTileSize.x + viewport.x;
+                    const float tilePosX = static_cast<float>(x) * mapTileSize.x;
                     //SDL_Log("%f", viewport.x);
                     const float tilePosY = (static_cast<float>(y) * mapTileSize.y);
 
@@ -155,14 +155,13 @@ void Map::draw(SDL_Renderer *r, SDL_FRect viewport) const
     {
 
         std::vector<SDL_Vertex> adjustedVerts = s.vertexData; // copy original
-
-        // Apply the inverse of camera transform
-        for (auto& v : adjustedVerts)
-        {
-            v.position.x -= viewport.x;
-            v.position.y -= viewport.y;
-        }
-        //Creates 2 triangles per tile to make the full square
         SDL_RenderGeometry(r, s.texture, adjustedVerts.data(), static_cast<std::int32_t>(s.vertexData.size()), nullptr, 0);
+    }
+
+    for (const auto& tile : solidRects)
+    {
+        SDL_SetRenderDrawColor(r, 0, 255, 0, 255); // Green
+        SDL_FRect box = tile;
+        SDL_RenderRect(r, &box);
     }
 }

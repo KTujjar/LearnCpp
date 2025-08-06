@@ -34,8 +34,8 @@ private:
 public:
     ~Player();
     Player();
-    void drawPlayer(SDL_Renderer *r);
-    void loadPlayer(SDL_Renderer *r);
+    void draw(SDL_Renderer *r);
+    void load(SDL_Renderer *r);
     void handleEvent(const SDL_Event &e);
     void update(double delta, std::vector<SDL_FRect> solidRects);
     void windowCollision();
