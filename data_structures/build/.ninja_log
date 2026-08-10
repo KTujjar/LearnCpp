@@ -1,0 +1,4 @@
+# ninja log v7
+1	23	1786380580349604259	CMakeFiles/main.dir/linkedlist.cpp.o	af8361e706c814ed
+0	529	1786380580348958091	CMakeFiles/main.dir/main.cpp.o	625d02d5ac4d5033
+529	590	1786380580878114537	bin/main	f78dbe251dbcbd3c

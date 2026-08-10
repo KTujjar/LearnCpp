@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/khaled/Downloads/LearnCpp/data_structures/build",
+  "command": "/usr/bin/clang++ -I/home/khaled/Downloads/LearnCpp/data_structures -g -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/main.dir/main.cpp.o -c /home/khaled/Downloads/LearnCpp/data_structures/main.cpp",
+  "file": "/home/khaled/Downloads/LearnCpp/data_structures/main.cpp",
+  "output": "/home/khaled/Downloads/LearnCpp/data_structures/build/CMakeFiles/main.dir/main.cpp.o"
+},
+{
+  "directory": "/home/khaled/Downloads/LearnCpp/data_structures/build",
+  "command": "/usr/bin/clang++ -I/home/khaled/Downloads/LearnCpp/data_structures -g -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/main.dir/linkedlist.cpp.o -c /home/khaled/Downloads/LearnCpp/data_structures/linkedlist.cpp",
+  "file": "/home/khaled/Downloads/LearnCpp/data_structures/linkedlist.cpp",
+  "output": "/home/khaled/Downloads/LearnCpp/data_structures/build/CMakeFiles/main.dir/linkedlist.cpp.o"
+}
+]

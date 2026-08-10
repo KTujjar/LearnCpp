@@ -1,0 +1,3 @@
+/home/khaled/Downloads/LearnCpp/data_structures/build/CMakeFiles/main.dir
+/home/khaled/Downloads/LearnCpp/data_structures/build/CMakeFiles/edit_cache.dir
+/home/khaled/Downloads/LearnCpp/data_structures/build/CMakeFiles/rebuild_cache.dir
